@@ -1,6 +1,6 @@
 
 describe("commotion", () => {
-	it("", async() => {
+	it("test framework exists", async() => {
 		expect(true).toBeTruthy()
 	})
 })
