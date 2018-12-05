@@ -41,34 +41,55 @@ export async function requestJson(params: RequestParams) {
 
 export interface JsonCallParams extends RequestParams {
 	data: any
+	method?: string
 }
 
 /**
  * make a call to a json api
  */
-export function jsonCall<ResponseData = any>({link, data}: JsonCallParams): Promise<ResponseData> {
+export function jsonCall<ResponseData = any>({
+	link,
+	data,
+	method = "POST"
+}: JsonCallParams): Promise<ResponseData> {
 	return new Promise<ResponseData>((resolve, reject) => {
-		const request = new XMLHttpRequest()
-		request.onload = () => {
+
+		// prepare the request payload json
+		const requestPayload = (() => {
 			try {
-				resolve(JSON.parse(request.responseText))
+				return JSON.stringify(data)
 			}
 			catch (error) {
-				error.message = `error parsing json: ${error.message}`
+				error.message = `error with request json: ${error.message}`
+				reject(error)
+			}
+		})()
+
+		// create the xhr
+		const xhr = new XMLHttpRequest()
+
+		// handle response
+		xhr.onload = () => {
+			try {
+				resolve(JSON.parse(xhr.responseText))
+			}
+			catch (error) {
+				error.message = `error parsing response json: ${error.message}`
 				reject(error)
 			}
 		}
-		request.onerror = event => {
-			const error = new Error(`xhr request error: ${request.status} ${request.statusText}`)
+
+		// handle error
+		xhr.onerror = event => {
+			const error = new Error(`xhr error: ${xhr.status} ${xhr.statusText}`)
 			reject(error)
 		}
-		request.open("GET", link)
-		try {
-			request.send(JSON.stringify(data))
-		}
-		catch (error) {
-			error.message = `error sending json: ${error.message}`
-			reject(error)
-		}
+
+		// open the connection and set headers
+		xhr.open(method, link, true)
+		xhr.setRequestHeader("Content-Type", "application/json")
+
+		// send the request
+		xhr.send(requestPayload)
 	})
 }

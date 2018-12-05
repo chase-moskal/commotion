@@ -1,6 +1,6 @@
 {
 	"name": "commotion",
-	"version": "0.0.0-dev.3",
+	"version": "0.0.0-dev.5",
 	"description": "browser http requests",
 	"keywords": [
 		"http",
